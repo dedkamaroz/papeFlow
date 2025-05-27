@@ -1,4 +1,4 @@
-# Process Flow App
+# papeFlow
 
 A privacy-centric process flow and note-taking desktop application built with Electron, React, and TypeScript.
 
@@ -34,7 +34,7 @@ A privacy-centric process flow and note-taking desktop application built with El
 1. Clone the repository:
 ```bash
 git clone <repository-url>
-cd process-flow-app
+cd papeFlow
 ```
 
 2. Install dependencies:
@@ -66,7 +66,7 @@ This will create distributable packages for your platform in the `release` direc
 ## Project Structure
 
 ```
-process-flow-app/
+papeFlow/
 ├── src/
 │   ├── main/                 # Electron main process
 │   │   ├── database/        # Database setup and migrations
@@ -103,7 +103,7 @@ process-flow-app/
 ### Privacy & Security
 - All data stored locally in SQLite database
 - No external API calls or telemetry
-- Database location: `~/AppData/Roaming/process-flow-app/` (Windows) or equivalent
+- Database location: `~/AppData/Roaming/papeFlow/` (Windows) or equivalent
 - Optional data export/import functionality
 
 ## Future Enhancements

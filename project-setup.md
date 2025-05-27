@@ -1,10 +1,10 @@
-# Process Flow App - Project Setup
+# papeFlow - Project Setup
 
 ## 1. Create Project Directory
 
 ```bash
-mkdir process-flow-app
-cd process-flow-app
+mkdir papeFlow
+cd papeFlow
 npm init -y
 ```
 

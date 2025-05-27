@@ -31,4 +31,4 @@ console.log('\n📝 Next steps:');
 console.log('1. Copy all the file contents from the artifacts above into their respective files');
 console.log('2. Run: npm install');
 console.log('3. Run: npm run dev');
-console.log('\n🎉 Your process flow app will be ready to use!');
+console.log('\n🎉 Your papeFlow will be ready to use!');

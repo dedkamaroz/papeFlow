@@ -52,7 +52,7 @@ const api = {
 };
 
 // Expose the API to the renderer process
-contextBridge.exposeInMainWorld('electronAPI', api);
+contextBridge.exposeInMainWorld('api', api);
 
 // Type declarations for TypeScript
 export type ElectronAPI = typeof api;

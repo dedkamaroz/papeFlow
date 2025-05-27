@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain } from 'electron';
+import { app, BrowserWindow, ipcMain, protocol } from 'electron';
 import path from 'path';
 import { initDatabase } from './database/init';
 import { registerIpcHandlers } from './ipc/handlers';
@@ -6,6 +6,13 @@ import { registerIpcHandlers } from './ipc/handlers';
 let mainWindow: BrowserWindow | null = null;
 
 const isDevelopment = process.env.NODE_ENV !== 'production';
+
+// Handle protocol for production
+if (!isDevelopment) {
+  protocol.registerSchemesAsPrivileged([
+    { scheme: 'app', privileges: { secure: true, standard: true } }
+  ]);
+}
 
 async function createWindow() {
   mainWindow = new BrowserWindow({
@@ -17,6 +24,7 @@ async function createWindow() {
       nodeIntegration: false,
       contextIsolation: true,
       preload: path.join(__dirname, 'preload.js'),
+      webSecurity: !isDevelopment, // Disable web security in development only
     },
     titleBarStyle: 'hiddenInset',
     backgroundColor: '#ffffff',
@@ -44,12 +52,7 @@ async function createWindow() {
     });
   }
   
-  // Open DevTools in production for debugging (remove this later)
-  if (!isDevelopment) {
-    mainWindow.webContents.once('dom-ready', () => {
-      mainWindow.webContents.openDevTools();
-    });
-  }
+  // DevTools will only open automatically in development mode
 
   mainWindow.on('closed', () => {
     mainWindow = null;

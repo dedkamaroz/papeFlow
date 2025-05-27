@@ -41,7 +41,7 @@ module.exports = {
   output: {
     path: path.resolve(__dirname, 'dist/renderer'),
     filename: '[name].[contenthash].js',
-    publicPath: isDevelopment ? '/' : './',
+    publicPath: isDevelopment ? '' : '',
   },
   plugins: [
     new HtmlWebpackPlugin({
