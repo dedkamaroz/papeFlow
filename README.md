@@ -1,5 +1,8 @@
 # papeFlow
 
+![papeFlow_logo](https://github.com/user-attachments/assets/2e8de817-9132-4295-8be2-ceebf80be82f)
+
+
 A privacy-centric process flow and note-taking desktop application built with Electron, React, and TypeScript.
 
 ## Features
