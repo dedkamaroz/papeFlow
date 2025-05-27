@@ -9,12 +9,15 @@ import {
   Grid,
   Save,
   Undo2,
-  Redo2
+  Redo2,
+  RefreshCw
 } from 'lucide-react';
 import { useAppStore } from '@renderer/stores/appStore';
+import { useProcessStore } from '@renderer/stores/processStore';
 
 const Toolbar: React.FC = () => {
   const { selectedTool, setSelectedTool, settings, updateSettings } = useAppStore();
+  const { loadProcesses, currentProcessId } = useProcessStore();
   
   const tools = [
     { id: 'select', icon: MousePointer2, label: 'Select' },
@@ -60,6 +63,15 @@ const Toolbar: React.FC = () => {
         </button>
         
         <div className="w-px h-6 bg-gray-300 mx-2" />
+        
+        {/* Refresh button */}
+        <button
+          onClick={() => loadProcesses(currentProcessId)}
+          className="p-2 text-gray-600 hover:text-gray-900 rounded hover:bg-gray-100"
+          title="Refresh"
+        >
+          <RefreshCw className="w-4 h-4" />
+        </button>
         
         {/* Grid toggle */}
         <button

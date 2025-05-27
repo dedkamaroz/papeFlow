@@ -10,12 +10,14 @@ export const processHandlers = {
       const now = Date.now();
       const id = uuidv4();
       
+      console.log('Creating process:', data);
+      
       const process: Process = {
         id,
         title: data.title || 'New Process',
         description: data.description || '',
         content: data.content || '',
-        parentId: data.parentId,
+        parentId: data.parentId === null ? undefined : data.parentId,
         position: data.position || { x: 0, y: 0 },
         size: data.size,
         color: data.color,
@@ -54,6 +56,7 @@ export const processHandlers = {
         process.syncStatus
       );
       
+      console.log('Process created successfully:', process.id);
       return { success: true, data: process };
     } catch (error) {
       console.error('Error creating process:', error);
@@ -151,15 +154,25 @@ export const processHandlers = {
       let query = 'SELECT * FROM processes';
       const params: any[] = [];
       
+      // If parentId is provided and not undefined, filter by it
       if (parentId !== undefined) {
-        query += ' WHERE parent_id = ?';
-        params.push(parentId);
+        if (parentId === null) {
+          query += ' WHERE parent_id IS NULL';
+        } else {
+          query += ' WHERE parent_id = ?';
+          params.push(parentId);
+        }
       }
+      // If no parentId provided, return ALL processes
       
       query += ' ORDER BY updated_at DESC';
       
+      console.log('Listing processes with query:', query, 'params:', params);
+      
       const rows = db.prepare(query).all(...params);
       const processes = rows.map(mapDbToProcess);
+      
+      console.log('Found processes:', processes.length);
       
       return { success: true, data: processes };
     } catch (error) {
@@ -180,7 +193,7 @@ export const processHandlers = {
       return { success: true, data: connections };
     } catch (error) {
       console.error('Error getting connections:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: (error && typeof error === 'object' && 'message' in error) ? (error as any).message : String(error) };
     }
   },
   
@@ -213,7 +226,7 @@ export const processHandlers = {
         connection.targetId,
         connection.label,
         connection.type,
-        JSON.stringify(connection.style),
+        connection.style ? JSON.stringify(connection.style) : null,
         now,
         now
       );
@@ -221,7 +234,7 @@ export const processHandlers = {
       return { success: true, data: connection };
     } catch (error) {
       console.error('Error creating connection:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: (error && typeof error === 'object' && 'message' in error) ? (error as any).message : String(error) };
     }
   },
   
@@ -233,7 +246,7 @@ export const processHandlers = {
       return { success: true };
     } catch (error) {
       console.error('Error deleting connection:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: (error && typeof error === 'object' && 'message' in error) ? (error as any).message : String(error) };
     }
   },
 };

@@ -7,7 +7,8 @@ import {
   Settings,
   Plus,
   ChevronRight,
-  ChevronDown
+  ChevronDown,
+  Home
 } from 'lucide-react';
 import { useProcessStore } from '@renderer/stores/processStore';
 
@@ -16,14 +17,17 @@ const Sidebar: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedProcesses, setExpandedProcesses] = useState<Set<string>>(new Set());
   
-  const { processes, currentProcessId, setCurrentProcess } = useProcessStore();
+  const { processes, currentProcessId, setCurrentProcess, createProcess } = useProcessStore();
+  
+  // Get all processes (not filtered by current parent)
+  const allProcesses = Object.values(processes);
   
   // Get root processes (no parent)
-  const rootProcesses = Object.values(processes).filter(p => !p.parentId && p.parentId !== currentProcessId);
+  const rootProcesses = allProcesses.filter(p => !p.parentId);
   
   // Get child processes for a given parent
   const getChildProcesses = (parentId: string) => {
-    return Object.values(processes).filter(p => p.parentId === parentId);
+    return allProcesses.filter(p => p.parentId === parentId);
   };
   
   const toggleProcess = (processId: string) => {
@@ -37,17 +41,18 @@ const Sidebar: React.FC = () => {
   };
   
   const renderProcess = (process: typeof processes[string], depth: number = 0) => {
-    const hasChildren = getChildProcesses(process.id).length > 0;
+    const children = getChildProcesses(process.id);
+    const hasChildren = children.length > 0;
     const isExpanded = expandedProcesses.has(process.id);
+    const isCurrent = currentProcessId === process.id;
     
     return (
       <div key={process.id}>
         <div
           className={`flex items-center px-3 py-2 hover:bg-gray-100 cursor-pointer rounded-md group ${
-            currentProcessId === process.id ? 'bg-primary-50 text-primary-700' : ''
+            isCurrent ? 'bg-primary-50 text-primary-700' : ''
           }`}
           style={{ paddingLeft: `${12 + depth * 16}px` }}
-          onClick={() => setCurrentProcess(process.id)}
         >
           {hasChildren && (
             <button
@@ -64,17 +69,40 @@ const Sidebar: React.FC = () => {
               )}
             </button>
           )}
-          <span className="flex-1 text-sm truncate">{process.title}</span>
+          <span 
+            onClick={() => setCurrentProcess(process.id)}
+            className="flex-1 text-sm truncate"
+          >
+            {process.title}
+          </span>
+          {hasChildren && (
+            <span className="text-xs text-gray-500 ml-2">({children.length})</span>
+          )}
         </div>
         
         {isExpanded && hasChildren && (
           <div>
-            {getChildProcesses(process.id).map(child => renderProcess(child, depth + 1))}
+            {children.map(child => renderProcess(child, depth + 1))}
           </div>
         )}
       </div>
     );
   };
+  
+  // Build breadcrumb path
+  const getBreadcrumbPath = () => {
+    const path = [];
+    let current = currentProcessId ? processes[currentProcessId] : null;
+    
+    while (current) {
+      path.unshift(current);
+      current = current.parentId ? processes[current.parentId] : null;
+    }
+    
+    return path;
+  };
+  
+  const breadcrumbPath = getBreadcrumbPath();
   
   return (
     <div className="h-full flex flex-col">
@@ -134,27 +162,42 @@ const Sidebar: React.FC = () => {
         {activeTab === 'processes' && (
           <div>
             {/* Breadcrumb */}
-            {currentProcessId && (
-              <div className="mb-4 text-sm text-gray-600">
-                <button
-                  onClick={() => setCurrentProcess(null)}
-                  className="hover:text-primary-600"
-                >
-                  All Processes
-                </button>
-                {currentProcessId && processes[currentProcessId] && (
-                  <span> / {processes[currentProcessId].title}</span>
-                )}
-              </div>
-            )}
+            <div className="mb-4 text-sm text-gray-600 flex items-center flex-wrap">
+              <button
+                onClick={() => setCurrentProcess(null)}
+                className="hover:text-primary-600 flex items-center"
+              >
+                <Home className="w-3 h-3 mr-1" />
+                Root
+              </button>
+              {breadcrumbPath.map((process, idx) => (
+                <React.Fragment key={process.id}>
+                  <span className="mx-2">/</span>
+                  <button
+                    onClick={() => setCurrentProcess(process.id)}
+                    className="hover:text-primary-600"
+                  >
+                    {process.title}
+                  </button>
+                </React.Fragment>
+              ))}
+            </div>
             
-            {/* Process list */}
+            {/* Process tree */}
             <div className="space-y-1">
               {rootProcesses.map(process => renderProcess(process))}
             </div>
             
             {/* Add new process button */}
-            <button className="mt-4 w-full flex items-center justify-center gap-2 py-2 text-sm text-gray-600 hover:text-primary-600 hover:bg-gray-100 rounded-md transition-colors">
+            <button 
+              onClick={async () => {
+                await createProcess({
+                  title: 'New Process',
+                  parentId: currentProcessId || undefined,
+                  position: { x: 100 + Math.random() * 200, y: 100 + Math.random() * 200 },
+                });
+              }}
+              className="mt-4 w-full flex items-center justify-center gap-2 py-2 text-sm text-gray-600 hover:text-primary-600 hover:bg-gray-100 rounded-md transition-colors">
               <Plus className="w-4 h-4" />
               New Process
             </button>

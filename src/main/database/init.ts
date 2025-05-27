@@ -18,8 +18,14 @@ export async function initDatabase(): Promise<void> {
     const userDataPath = app.getPath('userData');
     const dbPath = path.join(userDataPath, 'processflow.db');
     
+    console.log('Initializing database at:', dbPath);
+    
     // Ensure directory exists
     fs.mkdirSync(path.dirname(dbPath), { recursive: true });
+    
+    // Check if database exists
+    const dbExists = fs.existsSync(dbPath);
+    console.log('Database exists:', dbExists);
     
     // Initialize database
     db = new Database(dbPath);
@@ -29,10 +35,76 @@ export async function initDatabase(): Promise<void> {
     // Create tables
     createTables();
     
+    // If this is a fresh database, add some sample data
+    if (!dbExists) {
+      console.log('Creating sample data for new database...');
+      createSampleData();
+    }
+    
     console.log('Database initialized successfully at:', dbPath);
   } catch (error) {
     console.error('Failed to initialize database:', error);
     throw error;
+  }
+}
+
+function createSampleData(): void {
+  const db = getDatabase();
+  const { v4: uuidv4 } = require('uuid');
+  const now = Date.now();
+  
+  try {
+    // Create sample processes
+    const processes = [
+      {
+        id: uuidv4(),
+        title: 'Welcome to Process Flow',
+        description: 'Double-click to edit, drag to move',
+        position: { x: 100, y: 100 },
+        color: '#3b82f6',
+      },
+      {
+        id: uuidv4(),
+        title: 'Create New Processes',
+        description: 'Use the Add tool or sidebar button',
+        position: { x: 400, y: 100 },
+        color: '#10b981',
+      },
+      {
+        id: uuidv4(),
+        title: 'Connect Processes',
+        description: 'Drag from handle to handle',
+        position: { x: 250, y: 300 },
+        color: '#f59e0b',
+      },
+    ];
+    
+    const stmt = db.prepare(`
+      INSERT INTO processes (
+        id, title, description, content, parent_id, 
+        position_x, position_y, color,
+        created_at, updated_at, version, sync_status
+      ) VALUES (
+        ?, ?, ?, '', NULL, ?, ?, ?, ?, ?, 1, 'local'
+      )
+    `);
+    
+    processes.forEach(process => {
+      stmt.run(
+        process.id,
+        process.title,
+        process.description,
+        process.position.x,
+        process.position.y,
+        process.color,
+        now,
+        now
+      );
+    });
+    
+    console.log('Sample data created successfully');
+  } catch (error) {
+    console.error('Error creating sample data:', error);
   }
 }
 
@@ -233,6 +305,8 @@ function createTables(): void {
       ('snapToGrid', 'true'),
       ('gridSize', '20');
   `);
+  
+  console.log('All database tables created successfully');
 }
 
 export function closeDatabase(): void {

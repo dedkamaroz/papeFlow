@@ -1,12 +1,13 @@
 {
   "name": "papeFlow",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "A privacy-centric process flow and note-taking app",
   "main": "dist/main/index.js",
   "scripts": {
-    "dev": "concurrently -k \"npm run dev:main\" \"npm run dev:renderer\"",
+    "dev": "concurrently -k \"npm run dev:main\" \"npm run dev:renderer\" \"npm run electron:dev\"",
     "dev:main": "webpack --config webpack.main.config.js --mode development --watch",
     "dev:renderer": "webpack serve --config webpack.renderer.config.js --mode development",
+    "electron:dev": "wait-on http://localhost:3000 && electron .",
     "build": "npm run build:main && npm run build:renderer",
     "build:main": "webpack --config webpack.main.config.js --mode production",
     "build:renderer": "webpack --config webpack.renderer.config.js --mode production",
@@ -21,7 +22,7 @@
     "format": "prettier --write \"src/**/*.{ts,tsx,css}\""
   },
   "build": {
-    "appId": "com.marozilka.papeFlow",
+    "appId": "com.marozilka.papeflow",
     "productName": "papeFlow",
     "directories": {
       "output": "release"
@@ -70,10 +71,11 @@
     "postcss-loader": "^8.1.1",
     "prettier": "^3.1.1",
     "react-refresh": "^0.14.0",
-    "rimraf": "^5.0.10",
+    "rimraf": "^5.0.5",
     "style-loader": "^3.3.3",
     "ts-loader": "^9.5.1",
     "typescript": "^5.3.3",
+    "wait-on": "^8.0.3",
     "webpack": "^5.89.0",
     "webpack-cli": "^5.1.4",
     "webpack-dev-server": "^4.15.1"
